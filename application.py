@@ -33,8 +33,31 @@ for bank_name, bank_info in bank.items():
         eligible_banks[bank_name] = bank_info
 
 if eligible_banks:
-    print("\n Eligible banks:")
-    for bank_name in eligible_banks:
-        print(f"- {bank_name}")
+    best_bank = None
+    best_rate = 0
+
+    for bank_name, bank_info in eligible_banks.items():
+        if bank_info['rate'] > best_rate:
+            best_rate = bank_info['rate']
+            best_bank = bank_name
+    
+    print(f"\n The best bank for you is {best_bank} with {best_rate*100}% interest rate.")
+    
+    annual_interest = user_input * best_rate
+
 else:
     print("No eligible banks found.")
+
+import requests
+from bs4 import BeautifulSoup
+import re
+
+def scrape_real_bank_data():
+    
+
+
+
+
+
+
+
