@@ -16,11 +16,15 @@ while True:
 
 print(f"So you want to save, {user_input} dollars")
 
-
 bank = {
-    "Bank A": {"rate": 0.05, "minimum_deposit": 1000},
-    "Bank B": {"rate": 0.04, "minimum_deposit": 1500},
-    "Bank C": {"rate": 0.03, "minimum_deposit": 2000},
+    "Axos Bank": {"rate": 0.0446, "minimum_deposit": 1500},
+    "Bask Bank": {"rate": 0.0415, "minimum_deposit": 0},
+    "Openbank": {"rate": 0.0420, "minimum_deposit": 500},
+    "CIT Bank": {"rate": 0.0400, "minimum_deposit": 5000},
+    "E*TRADE": {"rate": 0.0400, "minimum_deposit": 0},
+    "UFB Direct": {"rate": 0.0401, "minimum_deposit": 0},
+    "Barclays": {"rate": 0.0390, "minimum_deposit": 0},
+    "Synchrony Bank": {"rate": 0.0380, "minimum_deposit": 0},
 }
 
 print("\n Available banks:")
@@ -41,31 +45,14 @@ if eligible_banks:
             best_rate = bank_info['rate']
             best_bank = bank_name
     
-    print(f"\n The best bank for you is {best_bank} with {best_rate*100}% interest rate.")
+    print(f"\n Recommendation: {best_bank}")
+    print(f" Interest rate: {best_rate*100}% APY")
+    print(f"Minimum deposit: {eligible_banks[best_bank]['minimum_deposit']}")
+    print(f" You'll earn approximately ${user_input * best_rate:.2f} per year.")
+
     
     annual_interest = user_input * best_rate
 
 else:
     print("No eligible banks found.")
-
-import requests
-from bs4 import BeautifulSoup
-import re
-
-def scrape_real_bank_data():
-    url = "https://www.nerdwallet.com/best/banking/savings-accounts"
-    response = requests.get(url)
-
-    if requests.status_codes == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        bank = {}
-
-        
-
-
-
-
-
-
-
 
