@@ -53,7 +53,15 @@ from bs4 import BeautifulSoup
 import re
 
 def scrape_real_bank_data():
-    
+    url = "https://www.nerdwallet.com/best/banking/savings-accounts"
+    response = requests.get(url)
+
+    if requests.status_codes == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        bank = {}
+
+        
+
 
 
 
