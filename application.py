@@ -5,7 +5,6 @@ import json
 
 # Load environment variables
 load_dotenv()
-#print(f"API key loaded: {os.getenv('ANTHROPIC_API_KEY')[:10] if os.getenv('ANTHROPIC_API_KEY') else 'None'}.....")
 
 def get_smart_recommendation(user_amount, eligible_banks, all_banks):
     # Get API key from environment variable
