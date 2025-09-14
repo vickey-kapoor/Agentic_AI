@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 import requests
 import json
 
+# Load environment variables
+load_dotenv()
+
 def get_smart_recommendation(user_amount, eligible_banks, all_banks):
     # Get API key from environment variable
     api_key = os.getenv('ANTHROPIC_API_KEY')
@@ -40,9 +43,12 @@ Be concise but helpful. Focus on their specific situation."""
     try:
         print("Making API call.......") #Debug
         response = requests.post("https://api.anthropic.com/v1/messages", 
-                               headers={"Content-Type": "application/json"},
+                               headers={"Content-Type": "application/json",
+                               "x-api-key": api_key,
+                               "anthropic-version":"2023-06-01"
+                               },
                                json={
-                                   "model": "claude-sonnet-4-20250514",
+                                   "model": "claude-3-haiku-20240307",
                                    "max_tokens": 300,
                                    "messages": [{"role": "user", "content": prompt}]
                                })
