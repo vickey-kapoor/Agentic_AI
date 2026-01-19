@@ -17,6 +17,11 @@ class ImageAIDetector:
         self.root.geometry("900x700")
         self.root.resizable(False, False)
 
+        # Force window to appear on top (Windows fix)
+        self.root.lift()
+        self.root.attributes('-topmost', True)
+        self.root.after_idle(self.root.attributes, '-topmost', False)
+
         # Configure style
         self.style = ttk.Style()
         self.style.theme_use('clam')
