@@ -225,49 +225,95 @@ class ImageAIDetector:
             image_data = self.encode_image(self.image_path)
 
             # Prepare the prompt
-            prompt = """You are an expert at detecting AI-generated images, 3D renders, and distinguishing them from real photographs. Analyze this image in extreme detail.
+            prompt = """You are a forensic image analyst specializing in detecting AI-generated images, 3D CGI renders, and authentic photographs. Your job is to be HIGHLY SKEPTICAL and look for any signs of artificiality.
 
-Look for these SPECIFIC indicators:
+CRITICAL ANALYSIS FRAMEWORK:
 
-**AI-Generated Image Artifacts:**
-- Unnatural symmetry or repetitive patterns
-- Weird hands, fingers, or facial features
-- Inconsistent lighting sources or shadow directions
-- Blurry or malformed text
-- Impossible reflections or perspectives
-- Unnatural skin texture or hair strands
-- Background elements that don't make logical sense
-- Objects merging unnaturally into each other
-- Unusual color gradients or saturation
+🔍 **STEP 1: First Impression Test**
+Does this look TOO perfect? Too clean? Too symmetrical? If YES → Likely artificial.
 
-**3D Render Indicators:**
-- Perfectly clean surfaces with no dust, wear, or imperfections
-- Overly perfect geometry and straight lines
-- Unrealistic material properties (too glossy, too matte, too perfect)
-- Artificial lighting that's too evenly distributed
-- Lack of natural randomness (everything looks placed intentionally)
-- No lens artifacts like chromatic aberration or subtle blur
-- Perfectly placed objects with no natural chaos
-- Materials that look "CG-like" rather than real-world weathered
+🔍 **STEP 2: Surface Perfection Check (BIGGEST TELL for 3D Renders)**
+- Are surfaces impossibly clean and smooth?
+- Zero dust, dirt, fingerprints, scratches, or wear?
+- Materials look brand new and "CG perfect"?
+- Fabric has no wrinkles, pilling, or texture variation?
+- Wood has no grain variation or natural imperfections?
+- Metals are perfectly uniform without oxidation?
+→ IF YES to 3+ = Almost certainly 3D RENDER
 
-**Real Photograph Indicators:**
-- Natural imperfections, dust, scratches, wear and tear
-- Realistic depth of field and lens characteristics
-- Natural lighting with complex interactions
-- Random elements and organic chaos
-- Realistic material aging and weathering
-- Natural color variations and noise
-- Authentic shadows with proper penumbra
-- Lens artifacts (slight distortion, vignetting)
+🔍 **STEP 3: Lighting Analysis (Major Tell)**
+- Is lighting perfectly even with no hot spots or dark corners?
+- Shadows too perfect or completely uniform?
+- No light bounce, color bleeding, or subsurface scattering?
+- All areas equally well-lit (architectural renders often do this)?
+→ IF YES = Strong indicator of 3D RENDER or AI
 
-**Your Analysis Must Include:**
-1. **CONCLUSION**: State clearly: "AI-Generated", "3D Render", "Real Photograph", or "Uncertain"
-2. **CONFIDENCE**: Give percentage (0-100%)
-3. **EVIDENCE**: List 5-7 specific visual elements you observed
-4. **KEY INDICATORS**: What were the strongest tells?
-5. **REASONING**: Explain your logic step by step
+🔍 **STEP 4: Chaos & Randomness Test**
+Real life is MESSY. Look for:
+- Random objects, clutter, or imperfections
+- Asymmetry and natural disorder
+- Organic placement of items (not grid-aligned)
+- Natural wear patterns and aging
+→ IF ABSENT = Likely artificial
 
-Be brutally honest and detailed. If something looks even slightly artificial, call it out specifically."""
+🔍 **STEP 5: Camera & Lens Realism**
+Real cameras create artifacts:
+- Slight lens distortion at edges
+- Depth of field blur (background/foreground)
+- Chromatic aberration on high-contrast edges
+- Natural color noise/grain
+- Slight vignetting in corners
+→ IF MISSING these = Possibly 3D render
+
+🔍 **STEP 6: AI-Specific Artifacts**
+- Warped/impossible hands or fingers
+- Text that's blurry or nonsensical
+- Objects merging unnaturally
+- Inconsistent perspectives
+- Repeated patterns that don't make sense
+- Facial features that look "off"
+→ IF PRESENT = AI-generated
+
+🔍 **STEP 7: Material Physics**
+Do materials behave correctly?
+- Fabric drapes naturally?
+- Reflections make physical sense?
+- Transparent objects refract properly?
+- Metals reflect environment realistically?
+→ IF NO = Artificial
+
+---
+
+**DETECTION RULES:**
+1. If it looks like an architectural visualization or product render = 3D RENDER
+2. If surfaces are TOO perfect = 3D RENDER
+3. If lighting is perfectly even = 3D RENDER or AI
+4. If there are AI artifacts (weird hands, impossible geometry) = AI-GENERATED
+5. If it has natural imperfections, mess, realistic lens effects = REAL PHOTOGRAPH
+6. When in doubt, assume ARTIFICIAL unless proven otherwise
+
+---
+
+**REQUIRED OUTPUT FORMAT:**
+
+**CONCLUSION:** [AI-Generated / 3D Render / Real Photograph]
+
+**CONFIDENCE:** [X%]
+
+**PRIMARY EVIDENCE:**
+1. [Most damning piece of evidence]
+2. [Second strongest indicator]
+3. [Third indicator]
+4. [Fourth indicator]
+5. [Fifth indicator]
+
+**DEAD GIVEAWAYS:**
+[What immediately told you this was artificial or real?]
+
+**DETAILED REASONING:**
+[Step-by-step forensic analysis of why you reached this conclusion]
+
+**CRITICAL NOTE:** Be AGGRESSIVE in detection. Most perfect-looking images are NOT real photographs. Real life has imperfections."""
 
             # Make API call
             response = requests.post(
