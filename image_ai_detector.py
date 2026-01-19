@@ -273,7 +273,7 @@ Be brutally honest and detailed. If something looks even slightly artificial, ca
                     "anthropic-version": "2023-06-01"
                 },
                 json={
-                    "model": "claude-3-opus-20240229",
+                    "model": "claude-3-haiku-20240307",
                     "max_tokens": 2048,
                     "messages": [
                         {
