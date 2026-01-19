@@ -220,16 +220,31 @@ class ImageAIDetector:
             image_data = self.encode_image(self.image_path)
 
             # Prepare the prompt
-            prompt = """Analyze this image carefully and determine if it is AI-generated or a real photograph.
+            prompt = """You are an expert at detecting AI-generated images. Analyze this image very carefully for signs of AI generation.
 
-Please provide:
-1. Your conclusion (AI-Generated or Real/Authentic)
-2. Confidence level (as a percentage)
-3. Key indicators that led to your conclusion
-4. Specific artifacts or features you noticed (e.g., unusual patterns, inconsistencies, typical AI artifacts)
-5. A brief explanation of your reasoning
+Look for these common AI artifacts:
+- Unrealistic hands, fingers, or facial features
+- Inconsistent lighting or shadows
+- Blurry or distorted text/letters
+- Repetitive or unnatural patterns in backgrounds
+- Asymmetrical features that should be symmetrical
+- Unnatural textures or materials
+- Impossible perspectives or physics
+- Watermark-like artifacts or noise patterns
 
-Format your response clearly with these sections."""
+Provide your analysis in this format:
+
+**CONCLUSION:** [AI-Generated OR Real Photograph]
+
+**CONFIDENCE:** [X%]
+
+**KEY INDICATORS:**
+- [List specific features you observed]
+
+**DETAILED ANALYSIS:**
+[Explain your reasoning in 2-3 sentences]
+
+Be specific and reference exact elements you see in the image."""
 
             # Make API call
             response = requests.post(
@@ -240,7 +255,7 @@ Format your response clearly with these sections."""
                     "anthropic-version": "2023-06-01"
                 },
                 json={
-                    "model": "claude-3-opus-20240229",
+                    "model": "claude-3-haiku-20240307",
                     "max_tokens": 1024,
                     "messages": [
                         {
