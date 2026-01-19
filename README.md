@@ -1,52 +1,84 @@
-# Agentic AI Projects
+# AI Image Detection POC
 
-This repository contains AI-powered applications built with Claude API.
+A proof-of-concept application that detects AI-generated images, 3D renders, and distinguishes them from real photographs using Claude Vision API.
 
-## Projects
+## Applications
 
-### 1. Savings Agent (application.py)
-An AI agent that recommends the best bank account savings rate based on your deposit amount.
+### 1. Screen Monitor (screen_monitor.py)
+A real-time floating monitor that analyzes your screen for AI-generated content while browsing social media.
 
 **Features:**
-- Analyzes multiple bank options
-- Provides personalized recommendations
-- Considers minimum deposit requirements
-- Calculates potential earnings
+- Real-time screen monitoring
+- Floating control panel UI
+- Red border overlay when AI content is detected
+- Multi-threaded analysis for performance
+- Image caching to avoid redundant API calls
+- Session statistics tracking
 
 **Usage:**
 ```bash
-python application.py
+python screen_monitor.py
 ```
 
-### 2. AI Image Detection Tool (image_ai_detector.py)
-A GUI application that classifies whether images are AI-generated or real photographs.
+### 2. Image Detector GUI (image_ai_detector.py)
+A standalone GUI application for analyzing individual images.
 
 **Features:**
 - User-friendly window interface
 - Image upload and preview
-- AI-powered analysis using Claude Vision API
-- Detailed detection results with confidence levels
-- Identifies AI artifacts and inconsistencies
+- Detailed analysis results with confidence levels
+- Identifies AI artifacts, 3D render indicators, and real photo characteristics
 
 **Usage:**
 ```bash
 python image_ai_detector.py
 ```
 
+## Detection Capabilities
+
+The system analyzes images for:
+
+**AI-Generated Indicators:**
+- Unnatural symmetry or repetitive patterns
+- Weird hands, fingers, or facial features
+- Inconsistent lighting and shadows
+- Blurry or malformed text
+- Background anomalies
+
+**3D Render Indicators:**
+- Perfectly clean surfaces
+- Overly perfect geometry
+- Unrealistic material properties
+- Artificial lighting distribution
+
+**Real Photo Indicators:**
+- Natural imperfections and wear
+- Realistic depth of field
+- Lens artifacts and characteristics
+- Organic randomness
+
 ## Installation
 
 1. Clone the repository
-2. Install dependencies:
+2. Create a virtual environment:
+```bash
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file with your Anthropic API key:
+4. Create a `.env` file with your Anthropic API key:
 ```
 ANTHROPIC_API_KEY=your_api_key_here
 ```
 
 ## Requirements
-- Python 3.7+
+- Python 3.8+
 - Anthropic API key
+- Windows OS (for screen monitor overlay features)
 - See `requirements.txt` for package dependencies
