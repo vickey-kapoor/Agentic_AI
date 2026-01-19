@@ -220,16 +220,49 @@ class ImageAIDetector:
             image_data = self.encode_image(self.image_path)
 
             # Prepare the prompt
-            prompt = """Analyze this image carefully and determine if it is AI-generated or a real photograph.
+            prompt = """You are an expert at detecting AI-generated images, 3D renders, and distinguishing them from real photographs. Analyze this image in extreme detail.
 
-Please provide:
-1. Your conclusion (AI-Generated or Real/Authentic)
-2. Confidence level (as a percentage)
-3. Key indicators that led to your conclusion
-4. Specific artifacts or features you noticed (e.g., unusual patterns, inconsistencies, typical AI artifacts)
-5. A brief explanation of your reasoning
+Look for these SPECIFIC indicators:
 
-Format your response clearly with these sections."""
+**AI-Generated Image Artifacts:**
+- Unnatural symmetry or repetitive patterns
+- Weird hands, fingers, or facial features
+- Inconsistent lighting sources or shadow directions
+- Blurry or malformed text
+- Impossible reflections or perspectives
+- Unnatural skin texture or hair strands
+- Background elements that don't make logical sense
+- Objects merging unnaturally into each other
+- Unusual color gradients or saturation
+
+**3D Render Indicators:**
+- Perfectly clean surfaces with no dust, wear, or imperfections
+- Overly perfect geometry and straight lines
+- Unrealistic material properties (too glossy, too matte, too perfect)
+- Artificial lighting that's too evenly distributed
+- Lack of natural randomness (everything looks placed intentionally)
+- No lens artifacts like chromatic aberration or subtle blur
+- Perfectly placed objects with no natural chaos
+- Materials that look "CG-like" rather than real-world weathered
+
+**Real Photograph Indicators:**
+- Natural imperfections, dust, scratches, wear and tear
+- Realistic depth of field and lens characteristics
+- Natural lighting with complex interactions
+- Random elements and organic chaos
+- Realistic material aging and weathering
+- Natural color variations and noise
+- Authentic shadows with proper penumbra
+- Lens artifacts (slight distortion, vignetting)
+
+**Your Analysis Must Include:**
+1. **CONCLUSION**: State clearly: "AI-Generated", "3D Render", "Real Photograph", or "Uncertain"
+2. **CONFIDENCE**: Give percentage (0-100%)
+3. **EVIDENCE**: List 5-7 specific visual elements you observed
+4. **KEY INDICATORS**: What were the strongest tells?
+5. **REASONING**: Explain your logic step by step
+
+Be brutally honest and detailed. If something looks even slightly artificial, call it out specifically."""
 
             # Make API call
             response = requests.post(
@@ -241,7 +274,7 @@ Format your response clearly with these sections."""
                 },
                 json={
                     "model": "claude-3-opus-20240229",
-                    "max_tokens": 1024,
+                    "max_tokens": 2048,
                     "messages": [
                         {
                             "role": "user",
