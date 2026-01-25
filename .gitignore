@@ -14,3 +14,12 @@
     __pycache__/
     *.pyc
     *.pyo
+
+    # Virtual environment
+    .venv/
+
+    # Generated database
+    clip_database.pkl
+
+    # Claude Code config
+    .claude/

@@ -1,84 +1,77 @@
-# AI Image Detection POC
+# AI Image Detector
 
-A proof-of-concept application that detects AI-generated images, 3D renders, and distinguishes them from real photographs using Claude Vision API.
+Real-time screen monitoring tool that detects AI-generated images using CLIP neural network with nearest neighbor classification.
 
-## Applications
+## Features
 
-### 1. Screen Monitor (screen_monitor.py)
-A real-time floating monitor that analyzes your screen for AI-generated content while browsing social media.
+- **Real-time screen monitoring** - Analyzes your screen while browsing
+- **Visual alerts** with sound:
+  - **Red X** → Likely AI
+  - **Yellow ?** → Uncertain
+  - **Green ✓** → Likely Real
+- **CLIP-based detection** - Uses vision-language model for accuracy
+- **Trainable** - Add your own reference images to improve detection
 
-**Features:**
-- Real-time screen monitoring
-- Floating control panel UI
-- Red border overlay when AI content is detected
-- Multi-threaded analysis for performance
-- Image caching to avoid redundant API calls
-- Session statistics tracking
+## Quick Start
 
-**Usage:**
 ```bash
-python screen_monitor.py
-```
-
-### 2. Image Detector GUI (image_ai_detector.py)
-A standalone GUI application for analyzing individual images.
-
-**Features:**
-- User-friendly window interface
-- Image upload and preview
-- Detailed analysis results with confidence levels
-- Identifies AI artifacts, 3D render indicators, and real photo characteristics
-
-**Usage:**
-```bash
-python image_ai_detector.py
-```
-
-## Detection Capabilities
-
-The system analyzes images for:
-
-**AI-Generated Indicators:**
-- Unnatural symmetry or repetitive patterns
-- Weird hands, fingers, or facial features
-- Inconsistent lighting and shadows
-- Blurry or malformed text
-- Background anomalies
-
-**3D Render Indicators:**
-- Perfectly clean surfaces
-- Overly perfect geometry
-- Unrealistic material properties
-- Artificial lighting distribution
-
-**Real Photo Indicators:**
-- Natural imperfections and wear
-- Realistic depth of field
-- Lens artifacts and characteristics
-- Organic randomness
-
-## Installation
-
-1. Clone the repository
-2. Create a virtual environment:
-```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
-```
-
-3. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Build the database (first time only)
+python build_database.py
+
+# Run the monitor
+python screen_monitor_clip.py
 ```
 
-4. Create a `.env` file with your Anthropic API key:
+## Training the Detector
+
+1. Add reference images:
 ```
-ANTHROPIC_API_KEY=your_api_key_here
+reference_images/real/   ← Add 10-20 real photos
+reference_images/ai/     ← Add 10-20 AI-generated images
+```
+
+2. Rebuild the database:
+```bash
+python build_database.py
+```
+
+## Detection Output
+
+| Symbol | Verdict | Meaning |
+|--------|---------|---------|
+| Red X | Likely AI | High confidence AI-generated |
+| Yellow ? | Uncertain | Cannot determine reliably |
+| Green ✓ | Likely Real | High confidence real photo |
+
+## Project Structure
+
+```
+├── screen_monitor_clip.py    # Main application
+├── build_database.py         # Build CLIP reference database
+├── modules/
+│   ├── clip_detector.py      # CLIP-based detection logic
+│   ├── screen_capture.py     # Screen capture utility
+│   ├── image_cache.py        # Image caching
+│   ├── overlay_window.py     # Visual alert overlay (X, ?, ✓)
+│   └── floating_ui.py        # Control panel UI
+├── reference_images/
+│   ├── real/                 # Real photo references
+│   └── ai/                   # AI image references
+└── clip_database.pkl         # Trained CLIP database
 ```
 
 ## Requirements
+
 - Python 3.8+
-- Anthropic API key
-- Windows OS (for screen monitor overlay features)
-- See `requirements.txt` for package dependencies
+- Windows OS (for screen capture and overlay)
+
+## How It Works
+
+1. **CLIP Feature Extraction** - Extracts visual features using OpenAI's CLIP model
+2. **Nearest Neighbor Classification** - Compares against database of known real/AI images
+3. **Confidence Scoring** - Returns verdict based on similarity to reference images
+
+Based on research paper [arXiv:2302.10174](https://arxiv.org/abs/2302.10174) - generalizes better across different AI generators than traditional classifiers.
