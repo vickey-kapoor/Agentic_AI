@@ -1,6 +1,6 @@
 """
-AI Image Detection Screen Monitor - CLIP-based
-Uses nearest neighbor classification for better accuracy
+AI Image Detection Screen Monitor - Deepfake Detection
+Uses fine-tuned SigLIP model for 94%+ accuracy
 """
 
 import os
@@ -8,7 +8,7 @@ import tkinter as tk
 from dotenv import load_dotenv
 import sys
 
-from modules.clip_detector import CLIPDetector
+from modules.deepfake_detector import DeepfakeDetector
 from modules.screen_capture import ScreenCapture
 from modules.image_cache import ImageCache
 from modules.floating_ui import FloatingControlPanel
@@ -20,11 +20,11 @@ import time
 from PIL import Image
 
 
-class CLIPMonitorController:
-    """Monitor controller using CLIP-based detection"""
+class MonitorController:
+    """Monitor controller using deepfake detection"""
 
-    def __init__(self, clip_detector, screen_capture, image_cache, overlay):
-        self.clip_detector = clip_detector
+    def __init__(self, detector, screen_capture, image_cache, overlay):
+        self.detector = detector
         self.screen_capture = screen_capture
         self.image_cache = image_cache
         self.overlay = overlay
@@ -75,9 +75,9 @@ class CLIPMonitorController:
                     time.sleep(self._interval)
                     continue
 
-                # Analyze with CLIP
+                # Analyze with deepfake detector
                 print(f"Analyzing capture #{self.stats['total_captures']}...")
-                result = self.clip_detector.analyze_image(screenshot_small)
+                result = self.detector.analyze_image(screenshot_small)
                 self.stats['total_analyses'] += 1
 
                 self.image_cache.set(screenshot_small, result)
@@ -118,43 +118,26 @@ class CLIPMonitorController:
         return stats
 
 
-class ScreenMonitorCLIP:
-    """Main application using CLIP-based detection"""
+class ScreenMonitor:
+    """Main application using deepfake detection"""
 
     def __init__(self):
         load_dotenv()
 
         self.root = tk.Tk()
         self.root.withdraw()
-        self.root.title("AI Monitor (CLIP)")
-
-        # Check for database
-        db_path = os.path.join(os.path.dirname(__file__), "clip_database.pkl")
+        self.root.title("AI Image Detector")
 
         print("=" * 50)
-        print("AI MEDIA DETECTOR - CLIP Edition")
+        print("AI IMAGE DETECTOR - Deepfake Edition")
         print("=" * 50)
-        print("Using CLIP neural network for detection")
+        print("Using SigLIP model (94.44% accuracy)")
         print("=" * 50)
 
         try:
-            # Initialize CLIP detector
-            print("\nInitializing CLIP detector...")
-            self.clip_detector = CLIPDetector()
-
-            # Load database
-            if os.path.exists(db_path):
-                self.clip_detector.load_database(db_path)
-                stats = self.clip_detector.get_stats()
-                print(f"Database: {stats['real_count']} real, {stats['ai_count']} AI images")
-            else:
-                print("\nWARNING: No reference database found!")
-                print("Run build_database.py first to create it.")
-                print("Add images to:")
-                print("  - reference_images/real/")
-                print("  - reference_images/ai/")
-                self._show_error("No database found. Run build_database.py first.")
-                return
+            # Initialize deepfake detector
+            print("\nInitializing detector...")
+            self.detector = DeepfakeDetector()
 
             # Initialize other components
             self.screen_capture = ScreenCapture()
@@ -162,8 +145,8 @@ class ScreenMonitorCLIP:
             self.overlay = OverlayWindow(self.root)
 
             # Create monitor controller
-            self.monitor = CLIPMonitorController(
-                self.clip_detector,
+            self.monitor = MonitorController(
+                self.detector,
                 self.screen_capture,
                 self.image_cache,
                 self.overlay
@@ -220,7 +203,7 @@ class ScreenMonitorCLIP:
 
 
 def main():
-    app = ScreenMonitorCLIP()
+    app = ScreenMonitor()
     app.run()
 
 

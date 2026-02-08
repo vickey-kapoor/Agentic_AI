@@ -257,13 +257,18 @@ class OverlayWindow:
         """Play alert sound in a separate thread"""
         def _play():
             try:
-                # Play system exclamation sound
-                winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
-                # Play two descending beeps
+                # Try to play system exclamation sound (non-blocking)
+                try:
+                    winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS | winsound.SND_ASYNC)
+                except Exception:
+                    pass  # System sound not available, continue with beeps
+
+                # Play descending beeps as the main alert
                 winsound.Beep(800, 200)
                 winsound.Beep(600, 200)
                 winsound.Beep(400, 300)
             except Exception as e:
+                # Beep failed - likely no audio device or running in restricted environment
                 print(f"Sound error: {e}")
 
         threading.Thread(target=_play, daemon=True).start()
