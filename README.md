@@ -73,6 +73,8 @@ Uses the [prithivMLmods/deepfake-detector-model-v1](https://huggingface.co/prith
 - Fixed sound alert error (added SND_ASYNC flag)
 - Added `transformers` to requirements
 
+**Note on failed approach:** Before switching to SigLIP, we attempted zero-shot text classification with CLIP (comparing image embeddings against "AI generated image" vs "real photograph" text embeddings). This approach failed completely - all images returned ~50% confidence because CLIP wasn't trained for AI detection. The broken zero-shot code remains in `clip_detector.py` (unused) as a reference of what NOT to do. Lesson: use specialized models for specialized tasks.
+
 ### Previous: CLIP-based Detection
 - Original implementation used CLIP embeddings with KNN classification
 - Required building reference database from real/AI images
