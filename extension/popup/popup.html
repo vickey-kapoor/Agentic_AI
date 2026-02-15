@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Image Detector</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AI Image Detector</h1>
+      <div id="status" class="status">
+        <span class="status-dot"></span>
+        <span class="status-text">Checking...</span>
+      </div>
+    </header>
+
+    <section class="stats-section">
+      <h2>Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value" id="totalAnalyses">-</span>
+          <span class="stat-label">Total Scans</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="aiDetections">-</span>
+          <span class="stat-label">AI Detected</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="cacheHitRate">-</span>
+          <span class="stat-label">Cache Hit Rate</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="recent-section">
+      <h2>Recent Detections</h2>
+      <div id="recentDetections" class="recent-list">
+        <p class="empty-message">No recent detections</p>
+      </div>
+    </section>
+
+    <footer>
+      <button id="rescanBtn" class="btn btn-primary">Rescan Page</button>
+      <button id="optionsBtn" class="btn btn-secondary">Options</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

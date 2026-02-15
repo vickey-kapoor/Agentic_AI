@@ -1,0 +1,95 @@
+/* AI Image Detector - Content Script Styles */
+
+.ai-detector-overlay {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-detector-overlay:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ai-detector-popup {
+  animation: ai-detector-fade-in 0.2s ease;
+}
+
+@keyframes ai-detector-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-detector-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 8px 8px 0 0;
+}
+
+.ai-detector-popup-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6c757d;
+  line-height: 1;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-detector-popup-close:hover {
+  color: #343a40;
+}
+
+.ai-detector-popup-content {
+  padding: 12px;
+}
+
+.ai-detector-popup-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ai-detector-popup-row:last-child {
+  border-bottom: none;
+}
+
+.ai-detector-popup-row span:first-child {
+  color: #6c757d;
+}
+
+.ai-detector-popup-row span:last-child {
+  font-weight: 500;
+}
+
+.ai-detector-popup .ai-detected {
+  color: #dc3545;
+}
+
+.ai-detector-popup .real-detected {
+  color: #28a745;
+}
+
+.ai-detector-popup-cached {
+  margin-top: 8px;
+  padding: 6px;
+  background: #e9ecef;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 11px;
+  color: #6c757d;
+}
