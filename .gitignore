@@ -1,25 +1,36 @@
-    # Ignore all files with .log extension
-    *.log
+# Ignore all files with .log extension
+*.log
 
-    # Ignore the 'node_modules' directory
-    node_modules/
+# Ignore the 'node_modules' directory
+node_modules/
 
-    # Ignore a specific file
-    config.json
+# Ignore a specific file
+config.json
 
-    # Ignore environment variables
-    .env
+# Ignore environment variables
+.env
 
-    # Ignore Python cache
-    __pycache__/
-    *.pyc
-    *.pyo
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
 
-    # Virtual environment
-    .venv/
+# Virtual environment
+.venv/
 
-    # Generated database
-    clip_database.pkl
+# Generated database
+clip_database.pkl
 
-    # Claude Code config
-    .claude/
+# Claude Code config
+.claude/
+
+# Log files
+logs/
+
+# Extension build output
+extension/dist/
+
+# Temp files
+_ul
+_ul-*
+nul

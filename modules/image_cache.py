@@ -2,12 +2,13 @@ import imagehash
 from PIL import Image
 import time
 from collections import OrderedDict
+from typing import Dict, Any, Optional
 
 
 class ImageCache:
     """Cache for analyzed images to avoid re-processing"""
 
-    def __init__(self, max_size=100, ttl=300):
+    def __init__(self, max_size: int = 100, ttl: int = 300):
         """
         Initialize image cache.
 
@@ -17,9 +18,11 @@ class ImageCache:
         """
         self.max_size = max_size
         self.ttl = ttl
-        self.cache = OrderedDict()  # {hash: (result, timestamp)}
+        self.cache: OrderedDict = OrderedDict()  # {hash: (result, timestamp)}
+        self._hits = 0
+        self._misses = 0
 
-    def get_image_hash(self, image):
+    def get_image_hash(self, image: Image.Image) -> str:
         """
         Compute perceptual hash of an image.
 
@@ -32,7 +35,7 @@ class ImageCache:
         # Use average hash for speed
         return str(imagehash.average_hash(image, hash_size=16))
 
-    def get(self, image):
+    def get(self, image: Image.Image) -> Optional[Dict[str, Any]]:
         """
         Check if image result is in cache.
 
@@ -51,20 +54,25 @@ class ImageCache:
             if time.time() - timestamp < self.ttl:
                 # Move to end (most recently used)
                 self.cache.move_to_end(img_hash)
+                self._hits += 1
                 return result
             else:
                 # Expired, remove
                 del self.cache[img_hash]
 
+        self._misses += 1
         return None
 
-    def set(self, image, result):
+    def set(self, image: Image.Image, result: Dict[str, Any]) -> str:
         """
         Store result in cache.
 
         Args:
             image: PIL Image object
             result: Analysis result dict
+
+        Returns:
+            str: Image hash
         """
         img_hash = self.get_image_hash(image)
 
@@ -73,12 +81,33 @@ class ImageCache:
             self.cache.popitem(last=False)
 
         self.cache[img_hash] = (result, time.time())
+        return img_hash
 
     def clear(self):
         """Clear all cached entries"""
         self.cache.clear()
+        self._hits = 0
+        self._misses = 0
 
-    def is_similar(self, image1, image2, threshold=5):
+    def get_stats(self) -> Dict[str, Any]:
+        """
+        Get cache statistics.
+
+        Returns:
+            dict: Cache statistics including hits, misses, and hit rate
+        """
+        total = self._hits + self._misses
+        hit_rate = (self._hits / total * 100) if total > 0 else 0.0
+
+        return {
+            'size': len(self.cache),
+            'max_size': self.max_size,
+            'hits': self._hits,
+            'misses': self._misses,
+            'hit_rate': round(hit_rate, 2)
+        }
+
+    def is_similar(self, image1: Image.Image, image2: Image.Image, threshold: int = 5) -> bool:
         """
         Check if two images are similar.
 

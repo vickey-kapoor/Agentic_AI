@@ -1,21 +1,27 @@
+import time
+import logging
 import torch
 from transformers import AutoImageProcessor, SiglipForImageClassification
 from PIL import Image
+from typing import Dict, Any
+
+logger = logging.getLogger("ai_detector")
 
 
 class DeepfakeDetector:
     """Deepfake detector using fine-tuned SigLIP model - 94.44% accuracy"""
 
-    def __init__(self, model_name="prithivMLmods/deepfake-detector-model-v1"):
+    def __init__(self, model_name: str = "prithivMLmods/deepfake-detector-model-v1"):
         """
         Initialize the deepfake detector.
 
         Args:
             model_name: HuggingFace model identifier
         """
-        print("Loading Deepfake Detection model...")
+        logger.info("Loading Deepfake Detection model...")
+        self.model_name = model_name
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Using device: {self.device}")
+        logger.info(f"Using device: {self.device}")
 
         # Load model and processor
         self.processor = AutoImageProcessor.from_pretrained(model_name)
@@ -26,9 +32,13 @@ class DeepfakeDetector:
         # Label mapping: 0 = fake, 1 = real
         self.id2label = {0: "fake", 1: "real"}
 
-        print("Deepfake Detection model loaded successfully!")
+        # Track statistics
+        self._total_analyses = 0
+        self._ai_detections = 0
 
-    def analyze_image(self, image):
+        logger.info("Deepfake Detection model loaded successfully!")
+
+    def analyze_image(self, image: Image.Image) -> Dict[str, Any]:
         """
         Analyze an image to determine if it's AI-generated/fake.
 
@@ -40,9 +50,14 @@ class DeepfakeDetector:
                 'is_ai': bool,
                 'confidence': float (0-1),
                 'verdict': str,
-                'full_analysis': str
+                'full_analysis': str,
+                'fake_probability': float,
+                'real_probability': float,
+                'processing_time_ms': float
             }
         """
+        start_time = time.perf_counter()
+
         # Ensure RGB
         if image.mode != 'RGB':
             image = image.convert('RGB')
@@ -75,6 +90,14 @@ class DeepfakeDetector:
             is_ai = False
             confidence = max(fake_prob, real_prob)
 
+        # Calculate processing time
+        processing_time_ms = (time.perf_counter() - start_time) * 1000
+
+        # Update statistics
+        self._total_analyses += 1
+        if is_ai:
+            self._ai_detections += 1
+
         analysis = f"Fake: {fake_prob*100:.1f}%, Real: {real_prob*100:.1f}%"
 
         return {
@@ -83,20 +106,34 @@ class DeepfakeDetector:
             'verdict': verdict,
             'full_analysis': analysis,
             'fake_probability': fake_prob,
-            'real_probability': real_prob
+            'real_probability': real_prob,
+            'processing_time_ms': processing_time_ms
         }
 
-    def get_stats(self):
-        """Get model statistics (for compatibility)"""
+    def get_model_info(self) -> Dict[str, str]:
+        """
+        Get model information.
+
+        Returns:
+            dict: Model name, device, and accuracy info
+        """
+        return {
+            'name': self.model_name,
+            'device': self.device,
+            'accuracy': '94.44%'
+        }
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Get model statistics"""
         return {
             'model': 'SigLIP Deepfake Detector',
             'accuracy': '94.44%',
-            'real_count': 0,
-            'ai_count': 0,
-            'total': 0
+            'total': self._total_analyses,
+            'ai_count': self._ai_detections,
+            'real_count': self._total_analyses - self._ai_detections
         }
 
-    def load_database(self, filepath):
+    def load_database(self, filepath: str) -> bool:
         """Compatibility method - no database needed for this model"""
-        print("Using pre-trained deepfake detection model (no database needed)")
+        logger.info("Using pre-trained deepfake detection model (no database needed)")
         return True
