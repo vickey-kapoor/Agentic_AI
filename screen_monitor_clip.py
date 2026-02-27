@@ -1,6 +1,6 @@
 """
-AI Image Detection Screen Monitor - Deepfake Detection
-Uses fine-tuned SigLIP model for 94%+ accuracy
+AI Image Detection Screen Monitor
+Uses ViT-based classifier for AI image detection (94.2% accuracy)
 """
 
 import os
@@ -8,7 +8,7 @@ import tkinter as tk
 from dotenv import load_dotenv
 import sys
 
-from modules.deepfake_detector import DeepfakeDetector
+from modules.ai_detector import AIImageDetector
 from modules.screen_capture import ScreenCapture
 from modules.image_cache import ImageCache
 from modules.floating_ui import FloatingControlPanel
@@ -21,7 +21,7 @@ from PIL import Image
 
 
 class MonitorController:
-    """Monitor controller using deepfake detection"""
+    """Monitor controller using ViT AI detection"""
 
     def __init__(self, detector, screen_capture, image_cache, overlay):
         self.detector = detector
@@ -75,7 +75,7 @@ class MonitorController:
                     time.sleep(self._interval)
                     continue
 
-                # Analyze with deepfake detector
+                # Analyze with AI detector
                 print(f"Analyzing capture #{self.stats['total_captures']}...")
                 result = self.detector.analyze_image(screenshot_small)
                 self.stats['total_analyses'] += 1
@@ -119,7 +119,7 @@ class MonitorController:
 
 
 class ScreenMonitor:
-    """Main application using deepfake detection"""
+    """Main application using ViT AI detection"""
 
     def __init__(self):
         load_dotenv()
@@ -129,15 +129,15 @@ class ScreenMonitor:
         self.root.title("AI Image Detector")
 
         print("=" * 50)
-        print("AI IMAGE DETECTOR - Deepfake Edition")
+        print("AI IMAGE DETECTOR")
         print("=" * 50)
-        print("Using SigLIP model (94.44% accuracy)")
+        print("Using ViT model (94.2% accuracy)")
         print("=" * 50)
 
         try:
-            # Initialize deepfake detector
+            # Initialize AI detector
             print("\nInitializing detector...")
-            self.detector = DeepfakeDetector()
+            self.detector = AIImageDetector()
 
             # Initialize other components
             self.screen_capture = ScreenCapture()

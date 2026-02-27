@@ -14,7 +14,7 @@ from PIL import Image
 
 from api.config import get_settings
 from api.rate_limiter import TokenBucketRateLimiter
-from modules.deepfake_detector import DeepfakeDetector
+from modules.ai_detector import AIImageDetector
 from modules.image_cache import ImageCache
 from modules.json_logger import JSONLogger
 
@@ -26,7 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger("ai_detector")
 
 # Global instances
-detector: Optional[DeepfakeDetector] = None
+detector: Optional[AIImageDetector] = None
 cache: Optional[ImageCache] = None
 json_logger: Optional[JSONLogger] = None
 rate_limiter: Optional[TokenBucketRateLimiter] = None
@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
         window_seconds=settings.rate_limit_window_seconds
     )
 
-    detector = DeepfakeDetector(model_name=settings.model_name)
+    detector = AIImageDetector()
 
     logger.info("API initialization complete!")
 
@@ -71,7 +71,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI Image Detector API",
-    description="Detect AI-generated images using SigLIP deepfake detection",
+    description="Detect AI-generated images using ViT classifier (94.2% accuracy)",
     version=VERSION,
     lifespan=lifespan
 )
@@ -186,13 +186,14 @@ async def analyze_image(request: Request, body: AnalyzeRequest):
         image_hash = cache.set(image, result)
 
     # Log analysis
+    model_info = detector.get_model_info()
     json_logger.log_analysis(
         request_id=request_id,
         image_hash=image_hash,
         source_url=body.source_url,
         result=result,
         processing_time_ms=processing_time_ms,
-        model_info=detector.get_model_info(),
+        model_info=model_info,
         cache_hit=cache_hit,
         image_url=body.image_url
     )
