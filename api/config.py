@@ -23,8 +23,9 @@ class Settings(BaseSettings):
     log_dir: str = "./logs"
     log_retention_days: int = 30
 
-    # Model settings
-    model_name: str = "prithivMLmods/deepfake-detector-model-v1"
+    # Model settings (CLIP)
+    clip_model_name: str = "ViT-B-32"
+    clip_pretrained: str = "openai"
 
     # Cache settings
     cache_max_size: int = 100
