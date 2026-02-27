@@ -2,8 +2,6 @@ import torch
 import open_clip
 from PIL import Image
 import numpy as np
-import os
-import pickle
 
 
 class CLIPDetector:
@@ -57,12 +55,6 @@ class CLIPDetector:
         # Pre-compute text embeddings
         self.ai_text_features = self._encode_text_prompts(self.ai_prompts)
         self.real_text_features = self._encode_text_prompts(self.real_prompts)
-
-        # Legacy: keep for backwards compatibility with saved databases
-        self.real_embeddings = []
-        self.ai_embeddings = []
-        self.labels = []
-        self.nn_model = None
 
         print("CLIP model loaded successfully!")
 
@@ -125,7 +117,6 @@ class CLIPDetector:
         real_max = real_similarities.max().item()
 
         # Calculate combined score using softmax-style normalization
-        # Higher temperature = more balanced, lower = more decisive
         temperature = 0.5
         ai_exp = np.exp(ai_score / temperature)
         real_exp = np.exp(real_score / temperature)
@@ -160,62 +151,4 @@ class CLIPDetector:
             'confidence': confidence,
             'verdict': verdict,
             'full_analysis': analysis
-        }
-
-    def add_reference_image(self, image, is_ai):
-        """Legacy method for backwards compatibility"""
-        features = self.extract_features(image).cpu().numpy().flatten()
-        if is_ai:
-            self.ai_embeddings.append(features)
-        else:
-            self.real_embeddings.append(features)
-        self.labels.append(1 if is_ai else 0)
-
-    def add_reference_folder(self, folder_path, is_ai):
-        """Legacy method for backwards compatibility"""
-        valid_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
-        for filename in os.listdir(folder_path):
-            ext = os.path.splitext(filename)[1].lower()
-            if ext in valid_extensions:
-                try:
-                    img_path = os.path.join(folder_path, filename)
-                    image = Image.open(img_path).convert('RGB')
-                    self.add_reference_image(image, is_ai)
-                    print(f"Added: {filename} ({'AI' if is_ai else 'Real'})")
-                except Exception as e:
-                    print(f"Error loading {filename}: {e}")
-
-    def _rebuild_nn_model(self):
-        """Legacy method - no longer used for classification"""
-        pass
-
-    def save_database(self, filepath):
-        """Save the reference database to disk (legacy support)"""
-        data = {
-            'real_embeddings': self.real_embeddings,
-            'ai_embeddings': self.ai_embeddings,
-            'labels': self.labels
-        }
-        with open(filepath, 'wb') as f:
-            pickle.dump(data, f)
-        print(f"Database saved to {filepath}")
-
-    def load_database(self, filepath):
-        """Load a reference database from disk (legacy support)"""
-        if os.path.exists(filepath):
-            with open(filepath, 'rb') as f:
-                data = pickle.load(f)
-            self.real_embeddings = data.get('real_embeddings', [])
-            self.ai_embeddings = data.get('ai_embeddings', [])
-            self.labels = data.get('labels', [])
-            print(f"Loaded {len(self.real_embeddings)} real and {len(self.ai_embeddings)} AI reference images")
-            return True
-        return False
-
-    def get_stats(self):
-        """Get database statistics"""
-        return {
-            'real_count': len(self.real_embeddings),
-            'ai_count': len(self.ai_embeddings),
-            'total': len(self.labels)
         }
