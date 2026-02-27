@@ -12,9 +12,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from PIL import Image
 
+import time
+
 from api.config import get_settings
 from api.rate_limiter import TokenBucketRateLimiter
-from modules.deepfake_detector import DeepfakeDetector
+from modules.clip_detector import CLIPDetector
 from modules.image_cache import ImageCache
 from modules.json_logger import JSONLogger
 
@@ -26,7 +28,7 @@ logging.basicConfig(
 logger = logging.getLogger("ai_detector")
 
 # Global instances
-detector: Optional[DeepfakeDetector] = None
+detector: Optional[CLIPDetector] = None
 cache: Optional[ImageCache] = None
 json_logger: Optional[JSONLogger] = None
 rate_limiter: Optional[TokenBucketRateLimiter] = None
@@ -59,7 +61,7 @@ async def lifespan(app: FastAPI):
         window_seconds=settings.rate_limit_window_seconds
     )
 
-    detector = DeepfakeDetector(model_name=settings.model_name)
+    detector = CLIPDetector()
 
     logger.info("API initialization complete!")
 
@@ -71,7 +73,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI Image Detector API",
-    description="Detect AI-generated images using SigLIP deepfake detection",
+    description="Detect AI-generated images using CLIP zero-shot classification",
     version=VERSION,
     lifespan=lifespan
 )
@@ -178,21 +180,33 @@ async def analyze_image(request: Request, body: AnalyzeRequest):
         image_hash = cache.get_image_hash(image)
         processing_time_ms = 0.0
     else:
-        # Analyze image
+        # Analyze image with timing
+        start_time = time.perf_counter()
         result = detector.analyze_image(image)
-        processing_time_ms = result.get("processing_time_ms", 0.0)
+        processing_time_ms = (time.perf_counter() - start_time) * 1000
+
+        # CLIP doesn't return fake/real probabilities, compute from confidence
+        if "fake_probability" not in result:
+            confidence = result.get("confidence", 0.5)
+            if result.get("is_ai", False):
+                result["fake_probability"] = confidence
+                result["real_probability"] = 1 - confidence
+            else:
+                result["real_probability"] = confidence
+                result["fake_probability"] = 1 - confidence
 
         # Cache result
         image_hash = cache.set(image, result)
 
     # Log analysis
+    model_info = {"name": "CLIP ViT-B-32", "device": detector.device, "accuracy": "~50% (zero-shot)"}
     json_logger.log_analysis(
         request_id=request_id,
         image_hash=image_hash,
         source_url=body.source_url,
         result=result,
         processing_time_ms=processing_time_ms,
-        model_info=detector.get_model_info(),
+        model_info=model_info,
         cache_hit=cache_hit,
         image_url=body.image_url
     )

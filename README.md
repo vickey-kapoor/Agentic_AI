@@ -1,10 +1,10 @@
 # AI Image Detector
 
-Detect AI-generated and deepfake images using a specialized SigLIP-based neural network with 94.44% accuracy. Available as both a **desktop screen monitor** and a **browser extension**.
+Detect AI-generated images using CLIP zero-shot classification. Available as both a **desktop screen monitor** and a **browser extension**.
 
 ## Features
 
-- **SigLIP Deepfake Detection** - Fine-tuned vision model for high accuracy (94.44%)
+- **CLIP Zero-Shot Detection** - Uses text-image similarity to classify images
 - **Two Modes of Operation**:
   - **Desktop Monitor** - Real-time screen capture and analysis
   - **Browser Extension** - Analyze images directly on web pages
@@ -12,33 +12,53 @@ Detect AI-generated and deepfake images using a specialized SigLIP-based neural 
   - **Red X** - Likely AI/Fake
   - **Yellow ?** - Uncertain
   - **Green checkmark** - Likely Real
-- **No training required** - Pre-trained model works out of the box
+- **No training required** - Pre-trained CLIP model works out of the box
+
+> **Note:** CLIP zero-shot classification has limited accuracy (~50%) for AI image detection since CLIP was not specifically trained for this task. For production use cases requiring high accuracy, consider using a specialized deepfake detection model.
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        AI Image Detector                         │
-├─────────────────────────────┬───────────────────────────────────┤
-│     Desktop Monitor         │       Browser Extension           │
-│   (screen_monitor_clip.py)  │         (extension/)              │
-│            │                │              │                    │
-│     Screen Capture          │       Content Script              │
-│            │                │       (auto-scan images)          │
-│            ▼                │              │                    │
-│     ┌─────────────┐         │              ▼                    │
-│     │  Deepfake   │         │     ┌─────────────────┐           │
-│     │  Detector   │◄────────┼─────│   FastAPI       │           │
-│     │  (SigLIP)   │         │     │   Backend       │           │
-│     └─────────────┘         │     │   (api/)        │           │
-│            │                │     └────────┬────────┘           │
-│     Overlay Window          │              │                    │
-│                             │       JSON Logging                │
-│                             │       (logs/*.jsonl)              │
-└─────────────────────────────┴───────────────────────────────────┘
++-------------------------------------------------------------------+
+|                        AI Image Detector                           |
++-----------------------------+-------------------------------------+
+|     Desktop Monitor         |       Browser Extension             |
+|   (screen_monitor_clip.py)  |         (extension/)                |
+|            |                |              |                      |
+|     Screen Capture          |       Content Script                |
+|            |                |       (auto-scan images)            |
+|            v                |              |                      |
+|     +-------------+         |              v                      |
+|     |    CLIP     |         |     +-----------------+             |
+|     |  Detector   |<--------+-----|   FastAPI       |             |
+|     | (Zero-Shot) |         |     |   Backend       |             |
+|     +-------------+         |     |   (api/)        |             |
+|            |                |     +--------+--------+             |
+|     Overlay Window          |              |                      |
+|                             |       JSON Logging                  |
+|                             |       (logs/*.jsonl)                |
++-----------------------------+-------------------------------------+
 ```
+
+---
+
+## How It Works
+
+CLIP (Contrastive Language-Image Pre-training) compares images against text descriptions to determine similarity. This detector uses zero-shot classification by comparing images to prompts like:
+
+**AI prompts:**
+- "an AI-generated image"
+- "a synthetic image created by artificial intelligence"
+- "a deepfake or AI-generated face"
+
+**Real prompts:**
+- "a real photograph taken by a camera"
+- "an authentic photograph of a real scene"
+- "a natural photo with real lighting and imperfections"
+
+The image is classified based on which set of prompts it matches more closely.
 
 ---
 
@@ -90,11 +110,11 @@ curl -X POST http://localhost:8000/analyze \
 {
   "request_id": "uuid",
   "is_ai": true,
-  "confidence": 0.87,
+  "confidence": 0.55,
   "verdict": "Likely AI",
-  "fake_probability": 0.87,
-  "real_probability": 0.13,
-  "processing_time_ms": 245.3,
+  "fake_probability": 0.55,
+  "real_probability": 0.45,
+  "processing_time_ms": 150.3,
   "cached": false
 }
 ```
@@ -118,7 +138,8 @@ curl -X POST http://localhost:8000/analyze \
 │   └── icons/
 │
 ├── modules/
-│   ├── deepfake_detector.py  # SigLIP-based detection
+│   ├── clip_detector.py      # CLIP zero-shot detection
+│   ├── deepfake_detector.py  # SigLIP-based detection (alternative)
 │   ├── json_logger.py        # Structured JSON logging
 │   ├── image_cache.py        # LRU cache with perceptual hashing
 │   ├── screen_capture.py     # Screen capture (desktop mode)
@@ -142,6 +163,8 @@ CORS_ORIGINS=*
 RATE_LIMIT_REQUESTS=30        # requests per minute
 LOG_DIR=./logs
 LOG_RETENTION_DAYS=30
+CLIP_MODEL_NAME=ViT-B-32      # CLIP model variant
+CLIP_PRETRAINED=openai        # pretrained weights
 ```
 
 ### Extension (Options Page)
@@ -158,17 +181,17 @@ All analyses are logged to `logs/ai_detector_YYYY-MM-DD.jsonl`:
 
 ```json
 {
-  "timestamp": "2026-02-15T14:30:00.123Z",
+  "timestamp": "2026-02-27T14:30:00.123Z",
   "request_id": "uuid",
   "image_hash": "a1b2c3d4...",
   "source_url": "https://example.com/page",
   "result": {
     "is_ai": true,
-    "confidence": 0.87,
+    "confidence": 0.55,
     "verdict": "Likely AI"
   },
-  "processing_time_ms": 245.3,
-  "model_info": {"name": "...", "device": "cuda"},
+  "processing_time_ms": 150.3,
+  "model_info": {"name": "CLIP ViT-B-32", "device": "cuda"},
   "cache_hit": false
 }
 ```
@@ -185,14 +208,30 @@ All analyses are logged to `logs/ai_detector_YYYY-MM-DD.jsonl`:
 
 ## Model Details
 
-Uses [prithivMLmods/deepfake-detector-model-v1](https://huggingface.co/prithivMLmods/deepfake-detector-model-v1):
-- **Architecture**: SigLIP (Sigmoid Loss for Language Image Pre-Training)
-- **Accuracy**: 94.44% on deepfake detection benchmarks
-- **Output**: Binary classification (fake/real) with probability scores
+Uses OpenAI's CLIP model via [open-clip-torch](https://github.com/mlfoundations/open_clip):
+- **Architecture**: ViT-B-32 (Vision Transformer)
+- **Approach**: Zero-shot text-image similarity
+- **Accuracy**: ~50% (not trained for AI detection)
+- **Output**: Confidence scores based on text prompt similarity
+
+### Limitations
+
+CLIP was trained for general image-text matching, not specifically for detecting AI-generated images. The zero-shot approach compares images to text descriptions, which is inherently limited for this task because:
+
+1. AI-generated images don't have consistent visual "tells" that map to text descriptions
+2. The model lacks training data specifically labeled for AI vs real classification
+3. Confidence scores tend to cluster around 50% (uncertain)
+
+For higher accuracy, consider using the alternative SigLIP-based detector (`deepfake_detector.py`) which achieves 94.44% accuracy.
 
 ---
 
 ## Development History
+
+### 2026-02-27: Switched to CLIP Zero-Shot Detection
+- Reverted to CLIP-based zero-shot classification approach
+- Using text-image similarity for AI image detection
+- Updated API and desktop monitor to use `CLIPDetector`
 
 ### 2026-02-15: Browser Extension Architecture
 - Added FastAPI backend (`api/`) with REST endpoints
@@ -205,15 +244,11 @@ Uses [prithivMLmods/deepfake-detector-model-v1](https://huggingface.co/prithivML
 - Added structured JSON logging with daily rotation
 - Added token bucket rate limiting (30 req/min)
 - Added image caching with hit/miss statistics
-- Updated `deepfake_detector.py` with timing and model info
 
 ### 2026-02-07: SigLIP Deepfake Detector Integration
-- Migrated from CLIP+KNN to specialized SigLIP deepfake detector
+- Integrated specialized SigLIP deepfake detector
 - Added `modules/deepfake_detector.py` with pre-trained model
-- Removed dependency on reference image database
-- 94.44% accuracy out of the box
-
-**Note on failed approach:** Before SigLIP, we attempted zero-shot CLIP classification (comparing against "AI generated image" vs "real photograph" text). This failed completely (~50% confidence on everything) because CLIP wasn't trained for AI detection. The broken code remains in `clip_detector.py` as a reference. Lesson: use specialized models for specialized tasks.
+- Achieved 94.44% accuracy out of the box
 
 ### Previous: CLIP-based Detection
 - Original implementation used CLIP embeddings with KNN classification
