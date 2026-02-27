@@ -1,20 +1,18 @@
 # AI Image Detector
 
-Detect AI-generated images using CLIP zero-shot classification. Available as both a **desktop screen monitor** and a **browser extension**.
+Detect AI-generated images using a ViT-based classifier with **94.2% accuracy**. Available as both a **desktop screen monitor** and a **browser extension**.
 
 ## Features
 
-- **CLIP Zero-Shot Detection** - Uses text-image similarity to classify images
+- **High Accuracy Detection** - ViT classifier trained on AI vs human-created images
 - **Two Modes of Operation**:
   - **Desktop Monitor** - Real-time screen capture and analysis
   - **Browser Extension** - Analyze images directly on web pages
 - **Visual Indicators**:
-  - **Red X** - Likely AI/Fake
+  - **Red X** - Likely AI-generated
   - **Yellow ?** - Uncertain
-  - **Green checkmark** - Likely Real
-- **No training required** - Pre-trained CLIP model works out of the box
-
-> **Note:** CLIP zero-shot classification has limited accuracy (~50%) for AI image detection since CLIP was not specifically trained for this task.
+  - **Green checkmark** - Likely human-created
+- **No training required** - Pre-trained model works out of the box
 
 ---
 
@@ -45,16 +43,6 @@ python screen_monitor_clip.py
 
 ---
 
-## How It Works
-
-CLIP compares images against text descriptions using cosine similarity. The detector classifies images by comparing them to:
-
-**AI prompts:** "an AI-generated image", "a synthetic image created by artificial intelligence", "a deepfake or AI-generated face", etc.
-
-**Real prompts:** "a real photograph taken by a camera", "an authentic photograph of a real scene", "a natural photo with real lighting", etc.
-
----
-
 ## API Endpoints
 
 | Endpoint | Method | Description |
@@ -68,6 +56,18 @@ CLIP compares images against text descriptions using cosine similarity. The dete
 curl -X POST http://localhost:8000/analyze \
   -H "Content-Type: application/json" \
   -d '{"image_base64": "...", "source_url": "https://example.com"}'
+```
+
+**Response:**
+```json
+{
+  "is_ai": false,
+  "confidence": 0.95,
+  "verdict": "Likely Real",
+  "fake_probability": 0.05,
+  "real_probability": 0.95,
+  "processing_time_ms": 150
+}
 ```
 
 ---
@@ -89,7 +89,7 @@ curl -X POST http://localhost:8000/analyze \
 │   └── utils/
 │
 ├── modules/
-│   ├── clip_detector.py      # CLIP zero-shot detection
+│   ├── ai_detector.py        # ViT-based AI image detector
 │   ├── image_cache.py        # LRU cache
 │   ├── json_logger.py        # JSON logging
 │   ├── screen_capture.py     # Screen capture
@@ -102,6 +102,22 @@ curl -X POST http://localhost:8000/analyze \
 
 ---
 
+## Model Details
+
+Uses [umm-maybe/AI-image-detector](https://huggingface.co/umm-maybe/AI-image-detector):
+- **Architecture**: Vision Transformer (ViT/Swin)
+- **Accuracy**: 94.2%
+- **Labels**: `artificial` (AI-generated) / `human` (real)
+- **Training**: Trained on AI-generated artistic images
+
+### Limitations
+
+- Optimized for artistic images (paintings, illustrations, AI art)
+- May not perform as well on deepfake photos
+- Training data predates Midjourney v5, SDXL, DALL-E 3
+
+---
+
 ## Configuration
 
 ### Backend (`.env`)
@@ -110,8 +126,6 @@ API_HOST=127.0.0.1
 API_PORT=8000
 CORS_ORIGINS=*
 RATE_LIMIT_REQUESTS=30
-CLIP_MODEL_NAME=ViT-B-32
-CLIP_PRETRAINED=openai
 ```
 
 ---
